@@ -10,6 +10,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import font
 import buttons
+import lose_image
 from PIL import ImageTk, Image
 
 
@@ -87,13 +88,14 @@ lbl_title = Message(root,
 img_main_menu = PhotoImage(file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\main-menu.png")
 lbl_menu = Label(root, image=img_main_menu).grid(row=0, column=1, sticky=N, columnspan=COLSPAN)  # The menu label
 
-lbl_please_enter = Label(root, justify=LEFT, text="Please enter a word or phrase below...", bg="gray", fg="white")
-lbl_please_cont = Label(root, justify=LEFT, text="Then press ENTER to register it, and\npress START NEW GAME to begin :)"
-                                                 "\n...or if you made a mistake press\nCLEAR to try again :\\",
+lbl_please_enter = Label(root, justify=LEFT, text="#1\nPlease enter a word or phrase below...", bg="gray", fg="white")
+lbl_please_cont = Label(root, justify=LEFT, text="#2\nPress ENTER to register it"
+                                                 "\n#3\nPress START NEW GAME to begin :)"
+                                                 "\n(#4)\nPress CLEAR to try again if required :\\",
                         bg="gray", fg="white")
 
-lbl_please_enter.grid(row=3, column=1, columnspan=COLSPAN, pady=1)
-lbl_please_cont.grid(row=5, column=1, columnspan=COLSPAN, pady=1)
+lbl_please_enter.grid(row=3, column=1, columnspan=COLSPAN, sticky=W, pady=1)
+lbl_please_cont.grid(row=5, column=1, columnspan=COLSPAN, sticky=W, pady=1)
 
 # The entry box for user input of what the user would like to use for the upcoming game
 text_box = Entry(root, relief=FLAT, width=38)
@@ -110,13 +112,15 @@ def get_input():
     and blank spaces to newlines.  It also grays out the ENTER button and entry field
     :return:
     """
-    answer = text_box.get()  # convert the string into chars
+    answer = text_box.get()  # for converting the string into chars
+    global original_user_entry
+    original_user_entry = text_box.get()
     convert = []
     length_of_entry = len(text_box.get())
     # Checks to make sure the user entered something in the entry box before pressing the ENTER button
     if length_of_entry == 0:
         messagebox.showwarning(title="Whoops!", message="Looks like you forgot to enter a word/phrase\n"
-                                                        "in the entry field, please enter 1 - 30 characters\n"
+                                                        "in the entry field, please enter 5 - 30 characters\n"
                                                         "and then press ENTER :\\")
     else:
         # first convert the string into ' _ ' and newlines in place of spaces
@@ -126,6 +130,7 @@ def get_input():
             else:
                 convert.append(' _ ')
         # then for the sake of removing the {}, convert it all back into a string
+        global return_to_string
         return_to_string = ""
         for x in convert:
             return_to_string += x
@@ -177,17 +182,21 @@ def start_game():
     else:
         # Displays the rules
         global lets_begin
-        lets_begin = Label(root, justify=LEFT, text="Excellent!!!\n"
+        lets_begin = Label(root, justify=LEFT, text="#5\n"
                                                     "Click on the letters below to try\n"
                                                     "and guess the hidden word or phrase.\n"
                                                     "********** BE WARNED! **********\n"
-                                                    "You only have FIVE chances\n"
+                                                    "You only have SIX chances\n"
                                                     "before it's GAME OVER :(",
                            bg="gray", fg="white")
-        lets_begin.grid(row=7, column=1, columnspan=COLSPAN, rowspan=11, pady=1)
+        lets_begin.grid(row=7, column=1, columnspan=COLSPAN, rowspan=13, pady=1, sticky=W)
 
 
-def alphabet_press():
+game_over = 0  # Used in alphabet_press() to determine the game_over count
+correct_guess_count = 0  # Used in alphabet_press() to determine the correct_guess_count
+
+
+def alphabet_press(user_letter_pick):
 
     # Checks to see if the START NEW GAME button was successfully pressed w/o error
     if lets_begin.winfo_exists() != 1:
@@ -195,9 +204,99 @@ def alphabet_press():
                                                                  "yourself, though your eagerness is appreciated\n"
                                                                  "please follow procedure :\\")
     else:
-        answer = text_box.get()
-        if answer[x] == buttons_abc[x]:
-            pass
+        b_label = []
+        for n in return_to_string:
+            b_label += n
+        global original_user_entry
+        original_entry_length = len(original_user_entry)
+        global game_over
+        global correct_guess_count
+        good_guess = FALSE
+        for letters in original_user_entry:
+            j = 0
+            if letters[j] == alphabet[user_letter_pick]:
+                b_label[j+1] = alphabet[user_letter_pick]
+                print("User_answer:", original_user_entry)
+                print("alphabet[user_letter_pick]", alphabet[user_letter_pick])
+                print("Letters:", letters[j])
+                good_guess = TRUE  # The player guessed the right letter
+                correct_guess_count += 1
+                print("correct_guess_count:", correct_guess_count)
+                print("original_entry_length:", original_entry_length)
+                if correct_guess_count == original_entry_length:  # The User wins the game!!
+                    messagebox.showinfo(title="**** WINNER! ****", message="CONGRATS!!\n"
+                                                                           "You figured out the word/phrase\n"
+                                                                           "before it was too late, clearly your\n"
+                                                                           "guessing skills are unfathomable")
+                    blank_labels.destroy()  # Removes the blanks
+                    lets_begin.destroy()  # Removes the let's begin label & rules
+                    enter_button['state'] = NORMAL  # re-enables the ENTER button
+                    text_box.config(state='normal')  # re-enables the entry box
+            j += 1
+        if good_guess == FALSE:  # The player guessed the wrong letter
+            game_over += 1
+            print("game_over:", game_over)
+            if game_over >= 1:
+                lll_img = Image.open(
+                    r"C:\Users\Owner\PycharmProjects\Module14\lose_image/left_leg_lose.png")  # open the image
+                resized_lll_img = lll_img.resize((300, 225),
+                                                 Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+                lose_leg_left_img = ImageTk.PhotoImage(resized_lll_img)  # assign the newly resized image
+                losing_lbl_one = Label(root, image=lose_leg_left_img, bg="gray", fg="white")  # Create the label
+                losing_lbl_one.photo = lose_leg_left_img  # Assign the img to the label (pic is blank w/o this)
+                losing_lbl_one.grid(row=0, column=12, columnspan=5, rowspan=5)  # place it on the grid
+            if game_over >= 2:
+                rll_img = Image.open(
+                    r"C:\Users\Owner\PycharmProjects\Module14\lose_image/right_leg_lose.png")  # open the image
+                resized_rll_img = rll_img.resize((300, 225),
+                                                 Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+                lose_leg_right_img = ImageTk.PhotoImage(resized_rll_img)  # assign the newly resized image
+                losing_lbl_two = Label(root, image=lose_leg_right_img, bg="gray", fg="white")  # Create the label
+                losing_lbl_two.photo = lose_leg_right_img  # Assign the img to the label (pic is blank w/o this)
+                losing_lbl_two.grid(row=0, column=16, columnspan=5, rowspan=5)  # place it on the grid
+            if game_over >= 3:
+                cl_img = Image.open(
+                    r"C:\Users\Owner\PycharmProjects\Module14\lose_image/chest_lose.png")  # open the image
+                resized_cl_img = cl_img.resize((300, 225),
+                                               Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+                lose_chest_img = ImageTk.PhotoImage(resized_cl_img)  # assign the newly resized image
+                losing_lbl_three = Label(root, image=lose_chest_img, bg="gray", fg="white")  # Create the label
+                losing_lbl_three.photo = lose_chest_img  # Assign the img to the label (pic is blank w/o this)
+                losing_lbl_three.grid(row=4, column=14, columnspan=5, rowspan=5)  # place it on the grid
+            if game_over >= 4:
+                lal_img = Image.open(
+                    r"C:\Users\Owner\PycharmProjects\Module14\lose_image/left_arm_lose.png")  # open the image
+                resized_lal_img = lal_img.resize((300, 225),
+                                                 Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+                left_arm_img = ImageTk.PhotoImage(resized_lal_img)  # assign the newly resized image
+                losing_lbl_four = Label(root, image=left_arm_img, bg="gray", fg="white")  # Create the label
+                losing_lbl_four.photo = left_arm_img  # Assign the img to the label (pic is blank w/o this)
+                losing_lbl_four.grid(row=5, column=12, columnspan=5, rowspan=5)  # place it on the grid
+            if game_over >= 5:
+                ral_img = Image.open(
+                    r"C:\Users\Owner\PycharmProjects\Module14\lose_image/right_arm_lose.png")  # open the image
+                resized_ral_img = ral_img.resize((300, 225),
+                                                 Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+                right_arm_img = ImageTk.PhotoImage(resized_ral_img)  # assign the newly resized image
+                losing_lbl_five = Label(root, image=right_arm_img, bg="gray", fg="white")  # Create the label
+                losing_lbl_five.photo = right_arm_img  # Assign the img to the label (pic is blank w/o this)
+                losing_lbl_five.grid(row=5, column=15, columnspan=5, rowspan=5)  # place it on the grid
+        if game_over >= 6:  # GAME OVER
+            hl_img = Image.open(
+                r"C:\Users\Owner\PycharmProjects\Module14\lose_image/head_lose.png")  # open the image
+            resized_hl_img = hl_img.resize((300, 225),
+                                             Image.ANTIALIAS)  # resize the image + makes sure borders are ok
+            head_img = ImageTk.PhotoImage(resized_hl_img)  # assign the newly resized image
+            losing_lbl_six = Label(root, image=head_img, bg="gray", fg="white")  # Create the label
+            losing_lbl_six.photo = head_img  # Assign the img to the label (pic is blank w/o this)
+            losing_lbl_six.grid(row=7, column=13, columnspan=5, rowspan=5)  # place it on the grid
+            messagebox.showerror(title="GAME OVER", message="GAME OVER\n"
+                                                            "Aw shucks, maybe next time :(")
+            blank_labels.destroy()  # Removes the blanks
+            lets_begin.destroy()  # Removes the let's begin label & rules
+            enter_button['state'] = NORMAL  # re-enables the ENTER button
+            text_box.config(state='normal')  # re-enables the entry box
+
 
 def change_start_button(event):
     """
@@ -406,7 +505,8 @@ def abc_s(abc_index, ALPHA_ROW, ALPHA_COL):
         a_label.config(image=img_alphabet_button_on_click)
         a_label.image = img_alphabet_button_on_click
         a_label.grid(row=ALPHA_ROW, column=ALPHA_COL, pady=4)  # Uses more padding b/c the image is smaller
-        alphabet_press()  # Adds a letter if past the START NEW GAME button has been pressed
+        alphabet_press(abc_index)  # Adds a letter if past the START NEW GAME button has been pressed
+
 
     def release_click_alphabet_button(event):
         """
