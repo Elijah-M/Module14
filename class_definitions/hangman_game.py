@@ -2,7 +2,13 @@
 Author: Elijah Morishita
 elmorishita@dmacc.edu
 11/23/2020
-This is a Hangman game, the GUI is completed via tkinter
+This is a Two Player Hangman game, the GUI is completed via tkinter.
+Player 1 presses the START NEW GAME button, types in a word or phrase, and clicks on ENTER to register it.
+Player 2 then attempts to figure out the word by clicking on the Letter buttons displayed at the bottom.
+Player 2 has six chances to figure out the word, otherwise they lose the game.  If they click on a letter
+that isn't apart of what Player 1 entered the a portion of the "Hangman" is uncovered.  Once they get to
+the end of the game, win or lose, they'll have the option to play again or close the program.
+The Options button is still under construction at this time.
 """
 
 from tkinter import *
@@ -31,9 +37,6 @@ def window_close():
 
 # If the uses closes out the window a message occurs
 root.protocol("WM_DELETE_WINDOW", window_close)
-
-
-COLSPAN = 8  # The column span
 
 # Changes the font to something that'll work for the title wording below
 default_font = font.nametofont("TkFixedFont")
@@ -100,16 +103,17 @@ lbl_title = Message(root,
                     ).grid(sticky=NW, rowspan=84)  # Left Justified, spanning 30 rows
 
 img_main_menu = PhotoImage(file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\main-menu.png")
-lbl_menu = Label(root, image=img_main_menu).grid(row=0, column=1, sticky=N, columnspan=COLSPAN)  # The menu label
+lbl_menu = Label(root, image=img_main_menu).grid(row=0, column=1, sticky=N, columnspan=8)  # The menu label
 
 lbl_please_enter = Label(root, justify=LEFT, text="#1\nClick on START NEW GAME to begin.", bg="gray", fg="white")
-lbl_please_cont = Label(root, justify=LEFT, text="#2\nEnter a word or phrase in the above entry field."
+lbl_please_cont = Label(root, justify=LEFT, text="#2\nEnter a word or phrase in the above\n"
+                                                 "entry field."
                                                  "\n#3\nPress ENTER to begin :)"
                                                  "\n(#4)\nPress CLEAR to try again if required :\\",
                         bg="gray", fg="white")
 
-lbl_please_enter.grid(row=24, column=1, columnspan=COLSPAN, sticky=W, pady=1)
-lbl_please_cont.grid(row=40, column=1, columnspan=COLSPAN, sticky=W, pady=1)
+lbl_please_enter.grid(row=24, column=1, columnspan=8, sticky=W, pady=1)
+lbl_please_cont.grid(row=40, column=1, columnspan=8, sticky=W, pady=1)
 
 # This forces all entry to become upper-case, and gives a maximum character amount
 a_variable = StringVar()
@@ -164,7 +168,7 @@ def check_input(the_user_entry):
 
 # The entry box for user input of what the user would like to use for the upcoming game
 text_box = Entry(root, relief=FLAT, width=38, textvariable=a_variable)
-text_box.grid(row=32, column=1, columnspan=COLSPAN, pady=1)
+text_box.grid(row=32, column=1, columnspan=8, pady=1)
 
 # This label is created and destroyed to check in start_game() if the ENTER button was pressed before START NEW GAME
 blank_labels = Label(root)
@@ -248,15 +252,13 @@ lets_begin = Label(root, justify=LEFT, text="#5\n"
                                             "You only have SIX chances\n"
                                             "before it's GAME OVER :(",
                                             bg="gray", fg="white")
-lets_begin.grid(row=56, column=1, columnspan=COLSPAN, rowspan=24, pady=1, sticky=W)
+lets_begin.grid(row=56, column=1, columnspan=8, rowspan=24, pady=1, sticky=W)
 
 
-game_over = 0  # Used in alphabet_press() to determine the game_over count
-correct_guess_count = 0  # Used in alphabet_press() to determine the correct_guess_count
+# ===================================================================================================
+# Placing the main LOSER image, the following Labels just cover up the main image
 LEFT_COL = 9
 RIGHT_COL = 10
-
-# Placing the main LOSER image, the following Labels just cover up the main image
 ws_img = Image.open(
     r"C:\Users\Owner\PycharmProjects\Module14\lose_image/Lose.png")  # open the image
 resized_wsl_img = ws_img.resize((300, 500),
@@ -285,9 +287,14 @@ losing_lbl_four.grid(row=28, column=LEFT_COL, rowspan=14, sticky='NESW')
 losing_lbl_five.grid(row=28, column=RIGHT_COL, rowspan=14, sticky='NESW')
 # Uncover the Head image
 losing_lbl_six.grid(row=42, column=LEFT_COL, columnspan=2, rowspan=23, sticky='NESW')
+# ===================================================================================================
 
 
 def recovery():
+    """
+    This brings back the cover labels
+    :return:
+    """
     # Uncovers the left Leg
     losing_lbl_one.grid(row=0, column=LEFT_COL, rowspan=15, sticky='NESW')
     # Uncovers the Right Leg
@@ -300,6 +307,7 @@ def recovery():
     losing_lbl_five.grid(row=28, column=RIGHT_COL, rowspan=14, sticky='NESW')
     # Uncover the Head image
     losing_lbl_six.grid(row=42, column=LEFT_COL, columnspan=2, rowspan=23, sticky='NESW')
+
 
 def game_over_remove_labels(game_over):
     """
@@ -322,8 +330,6 @@ def game_over_remove_labels(game_over):
         messagebox.showerror(title="GAME OVER", message="GAME OVER\n"
                                                         "Aw shucks, maybe next time :(")
         play_again()  # Asks if they'd like to play again
-        enter_button['state'] = NORMAL  # re-enables the ENTER button
-        text_box.config(state='normal')  # re-enables the entry box
 
 
 #  Creating the winning image
@@ -345,22 +351,27 @@ def play_again():
         cover_up.grid(row=65, column=9, rowspan=19, columnspan=2, sticky='NESW')
         enter_button['state'] = NORMAL  # re-enables the ENTER button
         text_box.config(state='normal')  # re-enables the entry box
-        recovery()
-        winning_lbl_zero.grid_forget()
+        recovery()  # Recovers the labels that cover the losing image
+        winning_lbl_zero.grid_forget()  # Temporarily removes the winning picture
     else:
         root.destroy()  # Closes the window
 
+
 def winner():
+    """
+    This displays the winning image and notifies the user that they won!
+    :return:
+    """
+    winning_lbl_zero.grid(row=0, column=LEFT_COL, rowspan=80, columnspan=2, sticky=N)  # Placing the winning image
     messagebox.showinfo(title="**** WINNER! ****", message="CONGRATS!!\n"
                                                            "You figured out the word/phrase\n"
                                                            "before it was too late, clearly your\n"
                                                            "guessing skills are unfathomable")
-    winning_lbl_zero.grid(row=0, column=LEFT_COL, rowspan=80, columnspan=2, sticky=N)  # Placing the winning image
+
     play_again()  # Finds out if they'd like to play again
 
 
 new_blank_labels = Label(root, bg="gray", fg="white")  # Update the Blanks label
-
 make_to_string = ""  # Used for creating a global string in alphabet_press()
 past_first_iteration = True
 strike_one = []  # Used to determine if the user clicks on the same letter more than once
@@ -369,7 +380,7 @@ first_strike_through = False
 
 def multiple_letters_check(user_letter_pick):
     """
-    This checks if the user clicked on the same letter multuple times
+    This checks if the user clicked on the same letter multiple times
     :param user_letter_pick:
     :return:
     """
@@ -391,6 +402,53 @@ def multiple_letters_check(user_letter_pick):
     return True  # They picked a different letter
 
 
+def remove_end_spaces(conversion):
+    """
+    Removes any additional spaces from the end
+    :param conversion:
+    :return:
+    """
+    ending = False
+    while ending == False:
+        if conversion[-1] == ' ':
+            del conversion[-1]
+        if conversion[-1] != ' ':
+            ending = True
+
+
+def remove_double_spaces(conversion):
+    """
+    This removes 1 space whenever double spaces occur - which are created by newlines (\n) from the conversion list
+    :param conversion:
+    :return:
+    """
+    # '\n' chars get converted to double blanks ' ' + ' ' ==========================
+    # So the below for loop removes one of those ' '
+    then_a_space = 0
+    length_of_conversion = len(conversion)
+    deletion_list = []
+    for o in range(length_of_conversion):
+        if conversion[o] == ' ':
+            then_a_space += 1
+        if conversion[o] != ' ':
+            then_a_space = 0
+        if then_a_space == 2:
+            # takes out the needed index for removal since I can't del an index in a for loop
+            deletion_list.append(o)
+    length_of_deletion_list = len(deletion_list)
+    del_iteration = 1
+    for u in range(length_of_deletion_list):
+        del conversion[deletion_list[u]]
+        if u + 1 == length_of_deletion_list:  # to avoid an index error as u would become too high in the last portion
+            continue
+        deletion_list[u + 1] -= del_iteration
+        del_iteration += 1
+
+
+game_over = 0  # Used in alphabet_press() to determine the game_over count
+correct_guess_count = 0  # Used in alphabet_press() to determine the correct_guess_count
+
+
 def alphabet_press(user_letter_pick):
     """
     This function implements most of the game logic via pressing the A - Z buttons
@@ -404,7 +462,7 @@ def alphabet_press(user_letter_pick):
                                                                  "please follow procedure :\\")
     else:
         attempt = multiple_letters_check(user_letter_pick)
-        if attempt == True:  # Checks if the user entered the same letter
+        if attempt == True:  # Checks if the user entered the same letter, ignores if it's the first iteration
             global first_strike_through
             first_strike_through = True
             global past_first_iteration
@@ -424,35 +482,8 @@ def alphabet_press(user_letter_pick):
             for h in range(original_entry_length):  # create a string of the original entry + " " to gain the length
                 conversion.append(" ")
                 conversion.append(original_user_entry[h])
-            # Removes any additional spaces from the end
-            ending = False
-            while ending == False:
-                if conversion[-1] == ' ':
-                    del conversion[-1]
-                if conversion[-1] != ' ':
-                    ending = True
-            # '\n' chars get converted to double blanks ' ' + ' ' ==========================
-            # So the below for loop removes one of those ' '
-            then_a_space = 0
-            length_of_conversion = len(conversion)
-            deletion_list = []
-            for o in range(length_of_conversion):
-                if conversion[o] == ' ':
-                    then_a_space += 1
-                if conversion[o] != ' ':
-                    then_a_space = 0
-                if then_a_space == 2:
-                    # takes out the needed index for removal since I can't del an index in a for loop
-                    deletion_list.append(o)
-            length_of_deletion_list = len(deletion_list)
-            del_iteration = 1
-            for u in range(length_of_deletion_list):
-                del conversion[deletion_list[u]]
-                if u+1 == length_of_deletion_list:  # to avoid an index error as u would become too high in the last portion
-                    continue
-                deletion_list[u+1] -= del_iteration
-                del_iteration += 1
-            # ===========================================================================
+            remove_end_spaces(conversion)  # Removes any additional spaces from the end
+            remove_double_spaces(conversion)  # Removes the space (' ') before any double spaces created by newlines (\n)
             global game_over
             global correct_guess_count
             global blank_labels
@@ -515,7 +546,7 @@ def change_start_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\start_new_game_raised_active.png")
     lbl_start_game.config(image=img_start_button_mouse_over)
     lbl_start_game.image = img_start_button_mouse_over
-    lbl_start_game.grid(row=8, column=1, columnspan=COLSPAN, pady=6)
+    lbl_start_game.grid(row=8, column=1, columnspan=8, pady=6)
 
 
 def change_back_start_button(event):
@@ -529,7 +560,7 @@ def change_back_start_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\start_new_game_raised_normal.png")
     lbl_start_game.config(image=img_start_button_mouse_over)
     lbl_start_game.image = img_start_button_mouse_over
-    lbl_start_game.grid(row=8, column=1, columnspan=COLSPAN, pady=6)
+    lbl_start_game.grid(row=8, column=1, columnspan=8, pady=6)
 
 
 def on_click_start_button(event):
@@ -542,7 +573,7 @@ def on_click_start_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\start_new_game_pressed_normal.png")
     lbl_start_game.config(image=img_start_button_on_click)
     lbl_start_game.image = img_start_button_on_click
-    lbl_start_game.grid(row=8, column=1, columnspan=COLSPAN, pady=8)  # Uses more padding b/c the image is smaller
+    lbl_start_game.grid(row=8, column=1, columnspan=8, pady=8)  # Uses more padding b/c the image is smaller
     place_holder.destroy()  # Removes the place holder
 
 
@@ -556,17 +587,28 @@ def release_click_start_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\start_new_game_raised_active.png")
     lbl_start_game.config(image=img_start_button_release_click)
     lbl_start_game.image = img_start_button_release_click
-    lbl_start_game.grid(row=8, column=1, columnspan=COLSPAN, pady=6)
+    lbl_start_game.grid(row=8, column=1, columnspan=8, pady=6)
 
 
 img_start_button = PhotoImage(file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\start_new_game_raised_normal.png")
 lbl_start_game = Label(root, image=img_start_button, bg="gray", fg="white")
-lbl_start_game.grid(row=8, column=1, sticky=S, columnspan=COLSPAN, pady=6)
+lbl_start_game.grid(row=8, column=1, sticky=S, columnspan=8, pady=6)
 
 lbl_start_game.bind("<Enter>", change_start_button)  # Mouse Rollover ("entering" the image area), uses the change method
 lbl_start_game.bind("<Leave>", change_back_start_button)  # Mouse Rollover ("leaving" the image area), uses the change_back method
 lbl_start_game.bind("<Button-1>", on_click_start_button)  # On-click the button appears to depress
 lbl_start_game.bind("<ButtonRelease>", release_click_start_button)  # Once released the On-click is disregarded
+
+
+def under_construction():
+    """
+    This shows that the option button is still under construction
+    :return:
+    """
+    messagebox.showinfo(title="Under Construction",
+                        message="The options menu is still under construction\n"
+                                "I'm thinking of adding a \"change background\n"
+                                "color\" option eventually, but not right now.")
 
 
 # The options button
@@ -580,7 +622,7 @@ def change_options_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\options_raised_active.png")
     lbl_options.config(image=img_option_button_mouse_over)
     lbl_options.image = img_option_button_mouse_over
-    lbl_options.grid(row=16, column=1, columnspan=COLSPAN, pady=6)
+    lbl_options.grid(row=16, column=1, columnspan=8, pady=6)
 
 
 def change_back_options_button(event):
@@ -594,7 +636,7 @@ def change_back_options_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\options_raised_normal.png")
     lbl_options.config(image=img_option_button_mouse_return)
     lbl_options.image = img_option_button_mouse_return
-    lbl_options.grid(row=16, column=1, columnspan=COLSPAN, pady=6)
+    lbl_options.grid(row=16, column=1, columnspan=8, pady=6)
 
 
 def on_click_options_button(event):
@@ -607,7 +649,8 @@ def on_click_options_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\options_pressed_normal.png")
     lbl_options.config(image=img_options_button_on_click)
     lbl_options.image = img_options_button_on_click
-    lbl_options.grid(row=16, column=1, columnspan=COLSPAN, pady=8)  # Uses more padding b/c the image is smaller
+    lbl_options.grid(row=16, column=1, columnspan=8, pady=8)  # Uses more padding b/c the image is smaller
+    under_construction()  # Calls the under construction button
 
 def release_click_options_button(event):
     """
@@ -619,12 +662,12 @@ def release_click_options_button(event):
         file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\options_raised_active.png")
     lbl_options.config(image=img_options_button_release_click)
     lbl_options.image = img_options_button_release_click
-    lbl_options.grid(row=16, column=1, columnspan=COLSPAN, pady=6)
+    lbl_options.grid(row=16, column=1, columnspan=8, pady=6)
 
 
 img_option_button = PhotoImage(file=r"C:\Users\Owner\PycharmProjects\Module14\buttons\options_raised_normal.png")
 lbl_options = Label(root, image=img_option_button, bg="gray", fg="white")
-lbl_options.grid(row=16, column=1, sticky=N, columnspan=COLSPAN, pady=6)
+lbl_options.grid(row=16, column=1, sticky=N, columnspan=8, pady=6)
 
 lbl_options.bind("<Enter>", change_options_button)  # Mouse Rollover ("entering" the image area), uses the change method
 lbl_options.bind("<Leave>", change_back_options_button)  # Mouse Rollover ("leaving" the image area), uses the change_back method
@@ -662,7 +705,6 @@ for x in range(alpha_length):
 ALPHA_ROW = 80
 ALPHA_COL = 1
 
-
 # Placing the letters in a grid, 3x rows of 8 + 1x row of 2
 this_index = 0
 for x in range(alpha_length):
@@ -675,7 +717,6 @@ for x in range(alpha_length):
         this_index = this_index + 1
         if y >= 7:
             break
-
 
 # Hides the letters until the START NEW GAME button has been pressed
 place_holder = Label(root, bg="gray")
